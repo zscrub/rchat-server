@@ -1,0 +1,19 @@
+syntax = "proto3";
+package protos;
+
+option go_package = "github.com/zscrub/rchat/server/protos";
+
+service RChat {
+    // Basic RPC for chat
+    rpc SendMessage(Message) returns (Response) {}
+
+}
+
+message Message {
+    string content = 1;
+    string author = 2;
+}
+
+message Response {
+    string detail = 1;
+}
