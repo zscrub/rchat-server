@@ -9,6 +9,6 @@ import (
 type ChatServer struct {
 	pb.UnimplementedRChatServer
 
-	mu         sync.Mutex // protects routeNotes
-	message map[string][]*pb.Message
+	mu         sync.Mutex 
+	message []*pb.Message
 }

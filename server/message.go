@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	pb "github.com/zscrub/rchat_server/protos"
@@ -21,17 +22,13 @@ func (s *ChatServer) ChatSession(stream pb.RChat_ChatSessionServer) error {
 		if err != nil {
 			return err
 		}
-		// key := serialize(in.Content)
-		key := in.Content
 
 		s.mu.Lock()
-		s.message[key] = append(s.message[key], in)
-
-		rn := make([]*pb.Message, len(s.message[key]))
-		copy(rn, s.message[key])
+		s.message = append(s.message, in)
+		fmt.Println(s.message)
 		s.mu.Unlock()
 
-		for _, note := range s.message[key] {
+		for _, note := range s.message {
 			if err := stream.Send(note); err != nil {
 				return err
 			}
