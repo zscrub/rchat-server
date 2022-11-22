@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type RChatClient interface {
 	// Basic RPC for chat
 	SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error)
+	ChatSession(ctx context.Context, opts ...grpc.CallOption) (RChat_ChatSessionClient, error)
 }
 
 type rChatClient struct {
@@ -43,12 +44,44 @@ func (c *rChatClient) SendMessage(ctx context.Context, in *Message, opts ...grpc
 	return out, nil
 }
 
+func (c *rChatClient) ChatSession(ctx context.Context, opts ...grpc.CallOption) (RChat_ChatSessionClient, error) {
+	stream, err := c.cc.NewStream(ctx, &RChat_ServiceDesc.Streams[0], "/protos.RChat/ChatSession", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &rChatChatSessionClient{stream}
+	return x, nil
+}
+
+type RChat_ChatSessionClient interface {
+	Send(*Message) error
+	Recv() (*Message, error)
+	grpc.ClientStream
+}
+
+type rChatChatSessionClient struct {
+	grpc.ClientStream
+}
+
+func (x *rChatChatSessionClient) Send(m *Message) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *rChatChatSessionClient) Recv() (*Message, error) {
+	m := new(Message)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // RChatServer is the server API for RChat service.
 // All implementations must embed UnimplementedRChatServer
 // for forward compatibility
 type RChatServer interface {
 	// Basic RPC for chat
 	SendMessage(context.Context, *Message) (*Response, error)
+	ChatSession(RChat_ChatSessionServer) error
 	mustEmbedUnimplementedRChatServer()
 }
 
@@ -58,6 +91,9 @@ type UnimplementedRChatServer struct {
 
 func (UnimplementedRChatServer) SendMessage(context.Context, *Message) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedRChatServer) ChatSession(RChat_ChatSessionServer) error {
+	return status.Errorf(codes.Unimplemented, "method ChatSession not implemented")
 }
 func (UnimplementedRChatServer) mustEmbedUnimplementedRChatServer() {}
 
@@ -90,6 +126,32 @@ func _RChat_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RChat_ChatSession_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(RChatServer).ChatSession(&rChatChatSessionServer{stream})
+}
+
+type RChat_ChatSessionServer interface {
+	Send(*Message) error
+	Recv() (*Message, error)
+	grpc.ServerStream
+}
+
+type rChatChatSessionServer struct {
+	grpc.ServerStream
+}
+
+func (x *rChatChatSessionServer) Send(m *Message) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *rChatChatSessionServer) Recv() (*Message, error) {
+	m := new(Message)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // RChat_ServiceDesc is the grpc.ServiceDesc for RChat service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +164,13 @@ var RChat_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RChat_SendMessage_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ChatSession",
+			Handler:       _RChat_ChatSession_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "protos/rchat.proto",
 }
