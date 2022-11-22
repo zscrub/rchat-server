@@ -19,6 +19,6 @@ func InitServer() {
 
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterRChatServer(grpcServer, &RouteServer{})
+	pb.RegisterRChatServer(grpcServer, &ChatServer{})
 	grpcServer.Serve(lis)
 }

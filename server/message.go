@@ -7,12 +7,12 @@ import (
 	pb "github.com/zscrub/rchat_server/protos"
 )
 
-func (s *RouteServer) SendMessage(ctx context.Context, message *pb.Message) (*pb.Response, error) {
+func (s *ChatServer) SendMessage(ctx context.Context, message *pb.Message) (*pb.Response, error) {
 	// store message
 	return &pb.Response{Detail: "Connected"}, nil
 }
 
-func (s *RouteServer) ChatSession(stream pb.RChat_ChatSessionServer) error {
+func (s *ChatServer) ChatSession(stream pb.RChat_ChatSessionServer) error {
 	for {
 		in, err := stream.Recv()
 		if err == io.EOF {
@@ -25,13 +25,13 @@ func (s *RouteServer) ChatSession(stream pb.RChat_ChatSessionServer) error {
 		key := in.Content
 
 		s.mu.Lock()
-		s.routeNotes[key] = append(s.routeNotes[key], in)
+		s.message[key] = append(s.message[key], in)
 
-		rn := make([]*pb.RouteNote, len(s.routeNotes[key]))
-		copy(rn, s.routeNotes[key])
+		rn := make([]*pb.Message, len(s.message[key]))
+		copy(rn, s.message[key])
 		s.mu.Unlock()
 
-		for _, note := range s.routeNotes[key] {
+		for _, note := range s.message[key] {
 			if err := stream.Send(note); err != nil {
 				return err
 			}

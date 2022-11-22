@@ -54,8 +54,8 @@ func (c *rChatClient) ChatSession(ctx context.Context, opts ...grpc.CallOption) 
 }
 
 type RChat_ChatSessionClient interface {
-	Send(*RouteNote) error
-	Recv() (*RouteNote, error)
+	Send(*Message) error
+	Recv() (*Message, error)
 	grpc.ClientStream
 }
 
@@ -63,12 +63,12 @@ type rChatChatSessionClient struct {
 	grpc.ClientStream
 }
 
-func (x *rChatChatSessionClient) Send(m *RouteNote) error {
+func (x *rChatChatSessionClient) Send(m *Message) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *rChatChatSessionClient) Recv() (*RouteNote, error) {
-	m := new(RouteNote)
+func (x *rChatChatSessionClient) Recv() (*Message, error) {
+	m := new(Message)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -131,8 +131,8 @@ func _RChat_ChatSession_Handler(srv interface{}, stream grpc.ServerStream) error
 }
 
 type RChat_ChatSessionServer interface {
-	Send(*RouteNote) error
-	Recv() (*RouteNote, error)
+	Send(*Message) error
+	Recv() (*Message, error)
 	grpc.ServerStream
 }
 
@@ -140,12 +140,12 @@ type rChatChatSessionServer struct {
 	grpc.ServerStream
 }
 
-func (x *rChatChatSessionServer) Send(m *RouteNote) error {
+func (x *rChatChatSessionServer) Send(m *Message) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *rChatChatSessionServer) Recv() (*RouteNote, error) {
-	m := new(RouteNote)
+func (x *rChatChatSessionServer) Recv() (*Message, error) {
+	m := new(Message)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}

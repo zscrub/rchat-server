@@ -7,7 +7,7 @@ service RChat {
     // Basic RPC for chat
     rpc SendMessage(Message) returns (Response) {}
 
-    rpc ChatSession(stream RouteNote) returns (stream RouteNote) {}
+    rpc ChatSession(stream Message) returns (stream Message) {}
 }
 
 message Message {
@@ -17,9 +17,4 @@ message Message {
 
 message Response {
     string detail = 1;
-}
-
-message RouteNote {
-    string content = 1;
-    string author = 2;
 }
